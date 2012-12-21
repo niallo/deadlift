@@ -1,0 +1,30 @@
+{
+  "name": "deadlift",
+  "version": "0.1.0",
+  "description": "Browser-based wizard for installing apps from Github to Heroku",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/niallo/deadlift.git"
+  },
+  "keywords": [
+    "github",
+    "heroku",
+    "deploy",
+    ""
+  ],
+  "author": "Niall O'Higgins",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "socket.io": "~0.9.13",
+    "node-static": "~0.6.5"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+}
