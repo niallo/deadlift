@@ -1,11 +1,7 @@
 var _ = require('underscore')
   , Step = require('step')
-  , async = require('async')
-  , config = require('./config')
   , crypto = require('crypto')
   , fs = require('fs')
-  , logging = require('./logging')
-  , models = require('./models')
   , qs = require('querystring')
   , request = require('request')
   , spawn = require('child_process').spawn
@@ -66,7 +62,7 @@ function api_call(path, api_key, callback, params, method, headers, body) {
     opts.body = body;
   }
 
-  console.debug("Heroku API request: %j", opts);
+  console.log("Heroku API request: %j", opts);
   request(opts, callback);
 
 };
@@ -133,11 +129,11 @@ function setup_account_integration(user_obj, api_key, callback) {
   Step(
     // Create keypair
     function() {
-      console.debug("Generating Heroku SSH keypair");
+      console.log("Generating Heroku SSH keypair");
       ssh.generate_keypair(user_obj.github.login, keyname, this);
     },
     function(code) {
-      console.debug("Reading Heroku SSH keypair");
+      console.log("Reading Heroku SSH keypair");
       fs.readFile(keyname, 'utf8', this.parallel());
       fs.readFile(keyname + ".pub", 'utf8', this.parallel());
     },
@@ -147,7 +143,7 @@ function setup_account_integration(user_obj, api_key, callback) {
       this.pubkey = pubkey;
       this.privkey = privkey;
       this.user_host_field = pubkey.split(' ')[2].trim();
-      console.debug("Adding Heroku SSH keypair via API");
+      console.log("Adding Heroku SSH keypair via API");
       add_ssh_key(api_key, pubkey, this);
     },
     // SSH key has been added, persist to MongoDB
@@ -161,7 +157,7 @@ function setup_account_integration(user_obj, api_key, callback) {
       }
       user_obj.heroku.push(heroku_config);
       user_obj.save(this);
-      console.debug("Heroku SSH keypair added, persisting to MongoDB");
+      console.log("Heroku SSH keypair added, persisting to MongoDB");
     },
     // unlink files
     function(err, user_obj) {
@@ -172,7 +168,7 @@ function setup_account_integration(user_obj, api_key, callback) {
       } catch(e) {
         // do nothing
       };
-      console.debug("Heroku SSH keypair deleted from local FS");
+      console.log("Heroku SSH keypair deleted from local FS");
       callback(err, user_obj, this.user_host_field);
     }
   );
