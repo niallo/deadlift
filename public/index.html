@@ -6,7 +6,7 @@
   <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
   <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
   <script src="http://code.jquery.com/jquery.min.js"></script>
-  <script src="bootstrap/js/bootstrap.min.js"></script>
+  <script src="spin.min.js"></script>
   <script type="text/javascript" data-main="init.js" src="require.js"></script>
 </head>
 
@@ -18,12 +18,18 @@
         <fieldset>
             <legend>Strider Installer</legend>
             <label>Heroku API Key</label>
-            <div class="control-group" data-bind="css: { error: herokuApiKeyInvalid }">
-              <input data-bind="value: herokuApiKey" class="input-xlarge" type="password" placeholder="API key"></input>
-              <span style="display: none;" class="help-inline" data-bind="visible: herokuApiKeyInvalid">Heroku API key invalid</span>
-              <span class="help-block">Find this on your <a target="_blank" href="https://dashboard.heroku.com/account">Heroku account page</a></span>
+            <div class="control-group" data-bind="css: { error: herokuApiKeyInvalid() && !inProgress() }">
+              <div class="input-append">
+                <input data-bind="value: herokuApiKey" class="input-xlarge spinner" type="password" placeholder="API key"></input>
+                <span style="display: none;" class="help-inline add-on" data-bind="visible: herokuApiKeyInvalid() && !inProgress()">Heroku API key invalid</span>
+                <img class="add-on" src="/spinner.gif" style="display: none;" data-bind="visible: inProgress" />
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary">Ok</button>
+            <span class="help-block">Find this on your <a target="_blank" href="https://dashboard.heroku.com/account">Heroku account page</a>. For your security, we don't persist this anywhere.</span>
+            <div class="btn-grp">
+              <button disabled="1" class="btn">Previous</button>
+              <button type="submit" class="btn btn-primary" data-bind="disable: inProgress">Next</button>
+            </div>
         </fieldset>
     </form>
   </div>
@@ -32,12 +38,44 @@
     <form data-bind="submit: herokuAppSelectSubmit ">
         <fieldset>
             <legend>Strider Installer</legend>
-            <label>Heroku App</label>
+            <label>Choose Heroku App</label>
             <div class="control-group">
-              <select data-bind="options: herokuApps"></select>
-              <span class="help-block">choose destination Heroku app for install</span>
+              <select data-bind="options: herokuApps, value: herokuAppName, optionsCaption: 'Select an existing app...'"></select>
             </div>
-            <button type="submit" class="btn btn-primary">Ok</button>
+            <div class="control-group" data-bind="css: { error: herokuAppNameInvalid() && !herokuAppName() }">
+              <div class="input-append">
+                <input data-bind="value: newHerokuAppName, disable: herokuAppName, valueUpdate: 'afterkeydown'" class="input-xlarge" type="text" placeholder="Or create a new Heroku app"></input>
+                <span class="help-inline add-on" data-bind="visible: herokuAppNameInvalid() && !herokuAppName(), text: herokuAppNameInvalid"></span>
+                <img class="add-on" src="/spinner.gif" style="display: none;" data-bind="visible: inProgress" />
+              </div>
+            </div>
+
+            <div class="btn-grp">
+              <button class="btn" data-bind="click: wizardPrevious">Previous</button>
+              <button type="submit" class="btn btn-primary" data-bind="disable: inProgress, enable: herokuAppName() || newHerokuAppName()">Next</button>
+            </div>
+        </fieldset>
+    </form>
+  </div>
+
+  <div data-bind="visible: wizardStep() === 2" class="span8 offset4" style="display: none;">
+    <form data-bind="submit: adminUserSubmit ">
+        <fieldset>
+            <legend>Strider Installer</legend>
+            <label>Create Admin User</label>
+            <div class="control-group" data-bind="css: { error: adminUserEmailInvalid }">
+              <input data-bind="value: adminUserEmail" class="input-xlarge" type="text" placeholder="Email of admin user e.g. janedoe@example.com"></input>
+              <span class="help-inline" data-bind="visible: adminUserEmailInvalid"></span>
+            </div>
+            <div class="control-group" data-bind="css: { error: adminUserPassword() === undefined || adminUserPassword().length < 6 }">
+              <input data-bind="value: adminUserPassword" type="password" placeholder="password"></input>
+              <span class="help-inline" data-bind="visible: adminUserPassword() === undefined || adminUserPassword().length < 6">Password must be at least 6 characters</span>
+            </div>
+
+            <div class="btn-grp">
+              <button class="btn" data-bind="click: wizardPrevious">Previous</button>
+              <button type="submit" class="btn btn-primary">Next</button>
+            </div>
         </fieldset>
     </form>
   </div>
