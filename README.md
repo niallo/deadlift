@@ -1,4 +1,4 @@
 deadlift
 ========
 
-Web-based PaaS deployment tool in Node.JS
+Browser-based wizard for installing apps from Github to Heroku.
