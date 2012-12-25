@@ -57,17 +57,23 @@
   </div>
 
   <div data-bind="visible: wizardStep() === 2" class="span8 offset4" style="display: none;">
-    <form data-bind="submit: adminUserSubmit ">
+    <form data-bind="submit: adminUserSubmit" class="form-horizontal">
         <fieldset>
             <legend>Strider Installer</legend>
-            <label>Create Admin User</label>
+            <label>Create Initial Admin User</label>
             <div class="control-group" data-bind="css: { error: adminUserEmailInvalid }">
-              <input data-bind="value: adminUserEmail" class="input-xlarge" type="text" placeholder="Email of admin user e.g. janedoe@example.com"></input>
-              <span class="help-inline" data-bind="visible: adminUserEmailInvalid"></span>
+              <label class="control-label" for="adminEmail">Email</label>
+              <div class="controls">
+                <input id="adminEmail" data-bind="value: adminUserEmail" type="text" placeholder="e.g. janedoe@example.com"></input>
+                <span class="help-inline" data-bind="visible: adminUserEmailInvalid"></span>
+              </div>
             </div>
             <div class="control-group" data-bind="css: { error: adminUserPassword() === undefined || adminUserPassword().length < 6 }">
-              <input data-bind="value: adminUserPassword" type="password" placeholder="password"></input>
-              <span class="help-inline" data-bind="visible: adminUserPassword() === undefined || adminUserPassword().length < 6">Password must be at least 6 characters</span>
+              <label class="control-label" for="adminPassword">Password</label>
+              <div class="controls">
+                <input id="adminPassword" data-bind="value: adminUserPassword, valueUpdate: 'afterkeydown'" type="password" placeholder="password"></input>
+                <span class="help-inline" data-bind="visible: adminUserPassword() === undefined || adminUserPassword().length < 6">Password must be at least 6 characters</span>
+              </div>
             </div>
 
             <div class="btn-grp">
