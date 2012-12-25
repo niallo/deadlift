@@ -1,18 +1,14 @@
 var _ = require('underscore')
   , Step = require('step')
-  , User = require('./models').User
   , crypto = require('crypto')
   , fs = require('fs')
   , qs = require('querystring')
   , request = require('request')
   , ssh = require('./ssh')
   , url = require('url')
-  , readConfig = require('./util').readConfig
   ;
 
 var GITHUB_API_ENDPOINT = "https://api.github.com";
-
-var config = readConfig();
 
 /*
  * get_oauth2()
