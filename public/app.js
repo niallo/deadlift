@@ -1,4 +1,4 @@
-define(['knockout-2.2.0', '/socket.io/socket.io.js', 'spin.min.js'], function(ko, io, spinner) {
+define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
 
   return function() {
     var self = this
