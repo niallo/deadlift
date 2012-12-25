@@ -18,7 +18,7 @@
             <label>Heroku API Key</label>
             <div class="control-group" data-bind="css: { error: herokuApiKeyInvalid() && !inProgress() }">
               <div class="input-append">
-                <input data-bind="value: herokuApiKey" class="input-xlarge spinner" type="password" placeholder="API key"></input>
+                <input data-bind="value: herokuApiKey" class="input-xlarge" type="password" placeholder="API key"></input>
                 <span style="display: none;" class="help-inline add-on" data-bind="visible: herokuApiKeyInvalid() && !inProgress()">Heroku API key invalid</span>
                 <img class="add-on" src="/spinner.gif" style="display: none;" data-bind="visible: inProgress" />
               </div>
