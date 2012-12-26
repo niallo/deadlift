@@ -23,7 +23,10 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
     self.adminUserEmail = ko.observable()
     self.adminUserPassword = ko.observable()
     self.adminUserEmailInvalid = ko.observable(false)
+    self.clientID = ko.observable()
+    self.clientSecret = ko.observable()
     self.inProgress = ko.observable(false)
+    self.deploySteps = ko.observableArray([])
 
     self.wizardPrevious = previous
 
@@ -71,7 +74,7 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
 
       self.socket.on('deployUpdate', function(data) {
         if (data.info) {
-          console.log('[' + data.step + '/8] ' + data.info)
+          self.deploySteps.push(data)
         }
       })
     }
@@ -105,8 +108,19 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
 
     }
     self.adminUserSubmit = function(el) {
-      console.log("sending deployHerokuApp event")
-      self.socket.emit('deployHerokuApp', {herokuAppName:self.herokuAppName()})
+      self.socket.emit('deployHerokuApp', 
+        {
+          herokuAppName:self.herokuAppName(), 
+          clientID:self.clientID(),
+          clientSecret:self.clientSecret(),
+          adminEmail:self.adminUserEmail(),
+          adminPassword:self.adminUserPassword()
+        })
+      next()
+    }
+
+    self.oauthSubmit = function(el) {
+      next()
     }
   }
 })
