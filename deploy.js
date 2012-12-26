@@ -1,3 +1,4 @@
+var crypto = require('crypto')
 var fs     = require('fs')
 var git    = require('gitane')
 var heroku = require('./heroku')
@@ -11,7 +12,7 @@ function shellWrap(str) {
   return { cmd:"sh", args:["-c", str] }
 }
 
-function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb) {
+function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, githubClientID, githubClientSecret, adminEmail, adminPassword, cb) {
   // cross-process (per-job) output buffers
   var stderrBuffer = ""
   var stdoutBuffer = ""
@@ -28,6 +29,8 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       stdout: opts.stdout || "",
       stderr: opts.stderr || "",
       stdmerged: opts.stdmerged || "",
+      info: opts.info,
+      step: opts.step,
       deployExitCode: null,
       url: null || opts.url,
     }
@@ -83,7 +86,7 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       proc.stdmergedBuffer += buf
       stdoutBuffer += buf
       stdmergedBuffer += buf
-      updateStatus("deploy_update" , {stdout:buf})
+      updateStatus("deployUpdate" , {stdout:buf})
     })
 
     proc.stderr.on('data', function(buf) {
@@ -91,7 +94,7 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       proc.stdmergedBuffer += buf
       stderrBuffer += buf
       stdmergedBuffer += buf
-      updateStatus("deploy_update", {stderr:buf})
+      updateStatus("deployUpdate", {stderr:buf})
     })
 
     proc.on('close', function(exitCode) {
@@ -106,28 +109,56 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
   var dir = path.join(__dirname, "_work")
   var cloneRoot = path.join(dir, parsed_url.repo)
 
-  // Convert format
+  // Plumb events from Gitane to Socket.io
   var gitEmitter = {
     emit:function(ev, data) {
-      console.log("emit, event: %s", ev)
       if (ev === 'stdout') {
-        updateStatus("deploy_update", {stdout:data})
+        updateStatus("deployUpdate", {stdout:data})
       }
       if (ev === 'stderr') {
-        updateStatus("deploy_update", {stderr:data})
+        updateStatus("deployUpdate", {stderr:data})
       }
     }
   }
 
+  var step = 0
+  function msg(s) {
+    updateStatus("deployUpdate", 
+        {info:s + "\n", step:step})
+    step++
+  }
+
   Step(
     function() {
+      msg("Setting custom buildpack")
+      // Set custom BUILDPACK_URL on the app - required for Strider
       heroku.api_call("/apps/" + herokuApp + "/config_vars", herokuApiKey, this,
         {}, "PUT", {}, JSON.stringify({BUILDPACK_URL:BUILDPACK_URL}))
     },
     function(e, r, b) {
       if (e || r.statusCode !== 200) {
-        console.log("error: %s status: %s", e, r.statusCode)
-        return
+        return cb("error setting BUILDPACK_URL config variable", null)
+      }
+      msg("Installing free mongolab:starter database")
+      // Install the free mongolab:starter addon
+      heroku.api_call("/apps/" + herokuApp + "/addons/mongolab:starter", herokuApiKey, this,
+        {}, "POST")
+
+    },
+    function(e, r, b) {
+      // http status code 422 = add-on already installed
+      if (e || (r.statusCode !== 200 && r.statusCode !== 422)) {
+        return cb("error installing mongolab:starter addon", null)
+      }
+      // Install the free mailgun:starter addon
+      msg("Installing free mailgun:starter email server")
+      heroku.api_call("/apps/" + herokuApp + "/addons/mailgun:starter", herokuApiKey, this,
+        {}, "POST")
+    },
+    function(e, r, b) {
+      // http status code 422 = add-on already installed
+      if (e || (r.statusCode !== 200 && r.statusCode !== 422)) {
+        return cb("error installing mailgun:starter addon", null)
       }
       var cmd = 'rm -rf ' + dir + ' ; mkdir -p ' + dir
       var sh = shellWrap(cmd)
@@ -141,14 +172,14 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       var cmd = 'git clone ' + repo_ssh_url
       var sh = shellWrap(cmd)
       console.log("cloning %s into %s", repo_ssh_url, dir)
+      msg("Cloning Strider from Github")
       forkProc(dir, sh.cmd, sh.args, this)
     },
     function(err, stdout, stderr) {
       if (err) {
-        console.log("b err: %s stdout: %s stderr: %s", err, stdout, stderr)
+        cb("error cloning Strider from Github")
       }
-      var msg = "Git clone complete"
-      console.log(msg)
+      msg("Adding Heroku Git remote")
       var cmd = 'git remote add heroku git@heroku.com:' + herokuApp + '.git'
       git.run({baseDir:cloneRoot,
         privKey:herokuPrivKey,
@@ -158,9 +189,29 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
     },
     function(err, stdout, stderr) {
       if (err) {
-        console.log("c err: %s", err)
+        return cb("error adding Heroku git remote")
+      }
+      msg('Building Strider config.js')
+      // Edit config.js
+      var sessionSecret = crypto.randomBytes(8).toString('hex')
+      fs.appendFileSync(path.join(cloneRoot, "config.js"), 'exports.session_store_secret = "' + sessionSecret+'";\n')
+      var striderServerName = 'https://' + herokuApp + '.herokuapp.com'
+      fs.appendFileSync(path.join(cloneRoot, "config.js"), 'exports.strider_server_name = "' + striderServerName +'";\n')
+      fs.appendFileSync(path.join(cloneRoot, "config.js"), 'exports.github.appId = "' + githubClientID +'";\n')
+      fs.appendFileSync(path.join(cloneRoot, "config.js"), 'exports.github.appSecret = "' + githubClientSecret +'";\n')
+      fs.appendFileSync(path.join(cloneRoot, "config.js"), 'exports.github.myHostname = "' + striderServerName +'";\n')
+
+      // Commit config.js changes
+      var cmd = 'git commit -m"autoconfig" config.js'
+      var sh = shellWrap(cmd)
+      forkProc(cloneRoot, sh.cmd, sh.args, this)
+    },
+    function(err, stdout, stderr) {
+      if (err) {
+        return cb("error building Strider config")
       }
       var cmd = 'git push heroku --force master'
+      msg("Pushing Strider to Heroku")
       git.run({baseDir:cloneRoot,
         privKey:herokuPrivKey,
         cmd:cmd,
@@ -168,8 +219,18 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       }, this)
     },
     function(err, stdout, stderr) {
-      console.log("deploy complete!")
-      cb(err)
+      if (err) {
+        return cb("error pushing Strider to Heroku")
+      }
+      msg("Creating Admin User")
+      heroku.api_call("/apps/" + herokuApp + "/ps", herokuApiKey, this,
+        {command:"bin/node bin/strider adduser -a -l " + adminEmail + " -p " + adminPassword }, "POST")
+    },
+    function(e, r, b) {
+      if (e || r.statusCode !== 200) {
+        return cb("error creating admin user", null)
+      }
+      cb(null, null)
     }
   )
 }
