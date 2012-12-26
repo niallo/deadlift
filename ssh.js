@@ -11,16 +11,15 @@ var crypto = require('crypto')
  * with no passphrase. Does not return the contents of the keys, leaves them
  * on the filesystem.
  *
- * <ghLogin> Github login. Will be used to generate a unique user@host aka comment field in pubkey.
  * <path> Base output file path. Pubkey will be path + ".pub".
  * <callback> function(exitcode)
  */
-var generate_keypair = exports.generate_keypair = function(ghLogin, path, callback)
+var generate_keypair = exports.generate_keypair = function(path, callback)
 {
 
   var cmd = "ssh-keygen"
   var random_str = crypto.randomBytes(8).toString('hex')
-  var comment_field = ghLogin + "-" + random_str + "@frippertronics.nko3.jit.su"
+  var comment_field = random_str + "@stridercd.com"
   var args = ["-t", "dsa", "-N", "", "-C", comment_field,  "-f", path]
   Step(
     function stepOne() {
