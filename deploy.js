@@ -107,8 +107,9 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
   var cloneRoot = path.join(dir, parsed_url.repo)
 
   // Convert format
-  var emitter = {
+  var gitEmitter = {
     emit:function(ev, data) {
+      console.log("emit, event: %s", ev)
       if (ev === 'stdout') {
         updateStatus("deploy_update", {stdout:data})
       }
@@ -152,7 +153,7 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       git.run({baseDir:cloneRoot,
         privKey:herokuPrivKey,
         cmd:cmd,
-        emitter:emitter
+        emitter:gitEmitter
       }, this)
     },
     function(err, stdout, stderr) {
@@ -163,7 +164,7 @@ function deploy(githubRepo, herokuApiKey, herokuPrivKey, herokuApp, emitter, cb)
       git.run({baseDir:cloneRoot,
         privKey:herokuPrivKey,
         cmd:cmd,
-        emitter:emitter
+        emitter:gitEmitter
       }, this)
     },
     function(err, stdout, stderr) {
