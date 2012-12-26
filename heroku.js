@@ -1,6 +1,5 @@
 var _ = require('underscore')
   , Step = require('step')
-  , crypto = require('crypto')
   , fs = require('fs')
   , qs = require('querystring')
   , request = require('request')
@@ -119,18 +118,17 @@ function delete_ssh_key(api_key, key, callback) {
  *
  * Create, upload and store the Heroku SSH key.
  *
- * <user_obj> Strider user object.
  * <api_key> Heroku API key.
  * <callback> function callback with args error, response, body.
  */
-function setup_account_integration(user_obj, api_key, callback) {
+function setup_account_integration(api_key, callback) {
   var keyname = "/tmp/heroku-key-" + Math.floor(Math.random() * 1024 * 1024);
 
   Step(
     // Create keypair
     function() {
       console.log("Generating Heroku SSH keypair");
-      ssh.generate_keypair(user_obj.github.login, keyname, this);
+      ssh.generate_keypair(keyname, this);
     },
     function(code) {
       console.log("Reading Heroku SSH keypair");
@@ -146,21 +144,8 @@ function setup_account_integration(user_obj, api_key, callback) {
       console.log("Adding Heroku SSH keypair via API");
       add_ssh_key(api_key, pubkey, this);
     },
-    // SSH key has been added, persist to MongoDB
+    // SSH key has been added, unlink files
     function(err, r, b) {
-      if (err) throw err;
-      var heroku_config = {
-          pubkey: this.pubkey
-        , privkey: this.privkey
-        , api_key: api_key
-        , account_id: this.user_host_field
-      }
-      user_obj.heroku.push(heroku_config);
-      user_obj.save(this);
-      console.log("Heroku SSH keypair added, persisting to MongoDB");
-    },
-    // unlink files
-    function(err, user_obj) {
       if (err) throw err;
       try {
         fs.unlink(keyname, this.parallel());
@@ -169,48 +154,11 @@ function setup_account_integration(user_obj, api_key, callback) {
         // do nothing
       };
       console.log("Heroku SSH keypair deleted from local FS");
-      callback(err, user_obj, this.user_host_field);
+      callback(err, this.privkey, this.pubkey, this.user_host_field);
     }
   );
 }
 
-
-/*
- * setup_delivery_integration()
- *
- * Link the Github repo with the deploy target and set the Heroku app name.
- *
- * <user> Strider user object.
- * <account_id> Heroku account id to link & set app name.
- * <gh_repo_url> Github repo config object url.
- * <app> App to use for the Heroku deployments.
- * <callback> function callback with args error, user_obj.
- */
-function setup_delivery_integration(user_obj, account_id,
-  gh_repo_url, app, callback) {
-  user_obj.get_repo_config(gh_repo_url, function(err, repo) {
-    if (err || !repo) {
-      console.error(
-        "setup_delivery_integration() - cannot find repo config for URL %s user: %s",
-        gh_repo_url,
-        user_obj.email);
-      return callback("Cannot find repo config for URL: " + gh_repo_url, null);
-    }
-
-    var heroku = _.find(user_obj.heroku, function(heroku) {
-      return heroku.account_id == account_id;
-    });
-
-    repo.prod_deploy_target.provider = "heroku";
-    repo.prod_deploy_target.account_id = account_id;
-    repo.prod_deploy_target.deploy_on_green = true;
-    heroku.app = app;
-
-    user_obj.save(function(err, user_obj) {
-      callback(err, user_obj);
-    });
-  });
-}
 
 module.exports = {
   add_ssh_key: add_ssh_key,
@@ -219,5 +167,4 @@ module.exports = {
   list_ssh_keys: list_ssh_keys,
   make_basic_auth_header: make_basic_auth_header,
   setup_account_integration: setup_account_integration,
-  setup_delivery_integration: setup_delivery_integration,
 };
