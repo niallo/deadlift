@@ -65,7 +65,13 @@ io.on('connection', function(socket) {
     console.log("deployHerokuApp")
     socket.get('herokuPrivKey', function(e, herokuPrivKey) {
       socket.get('herokuApiKey', function(e, herokuApiKey) {
-        deploy(STRIDER_REPO, herokuApiKey, herokuPrivKey, data.herokuAppName, socket, function(err) {
+        deploy(STRIDER_REPO, herokuApiKey, herokuPrivKey, data.herokuAppName, socket,
+          data.clientID, data.clientSecret, data.adminEmail, data.adminPassword, function(err) {
+          if (err) {
+            socket.emit('deployError', {error:err})
+            return
+          }
+          socket.emit('deployComplete')
           console.log("deploy complete!")
         })
       })
