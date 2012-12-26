@@ -68,6 +68,12 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
         self.herokuApiKeyInvalid(false)
         next()
       })
+
+      self.socket.on('deployUpdate', function(data) {
+        if (data.info) {
+          console.log('[' + data.step + '/8] ' + data.info)
+        }
+      })
     }
 
     function validateAppName() {
@@ -99,8 +105,8 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
 
     }
     self.adminUserSubmit = function(el) {
-
-
+      console.log("sending deployHerokuApp event")
+      self.socket.emit('deployHerokuApp', {herokuAppName:self.herokuAppName()})
     }
   }
 })
