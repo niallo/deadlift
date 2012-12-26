@@ -55,8 +55,53 @@
         </fieldset>
     </form>
   </div>
-
   <div data-bind="visible: wizardStep() === 2" class="span8 offset4" style="display: none;">
+    <form data-bind="submit: oauthSubmit" class="form-horizontal">
+        <fieldset>
+            <legend>Strider Installer</legend>
+            <label>Create Github OAuth App</label>
+            <p>Strider needs a Github Access Key and Secret in order to use the Github API.
+            You can create one at <a href="https://github.com/settings/applications/new" target="_blank">Github Settings/Applications</a> page.
+            </p>
+            <p>
+            You should copy &amp; paste the following values for Mail URL and Callback URL:
+            </p>
+            <div class="control-group">
+              <label class="control-label" for="mainUrl">Main URL</label>
+              <div class="controls">
+                <input id="mainUrl" class="input-xlarge uneditable-input" data-bind="value: 'https://' +  herokuAppName() + '.herokuapp.com' " type="text"/>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="callbackUrl">Callback URL</label>
+              <div class="controls">
+                <input id="callbackUrl" class="input-xlarge uneditable-input" data-bind="value: 'https://' +  herokuAppName() + '.herokuapp.com/auth/github/callback' " type="text" />
+              </div>
+            </div>
+            <div class="control-group" data-bind="css: { error: clientID() === undefined }">
+              <label class="control-label" for="clientID">Github Client ID</label>
+              <div class="controls">
+                <input id="clientID" data-bind="value: clientID" type="text" placeholder="Client ID"></input>
+                <span class="help-inline" data-bind="visible: clientID"></span>
+              </div>
+            </div>
+            <div class="control-group" data-bind="css: { error: clientSecret() === undefined || clientSecret().length < 6 }">
+              <label class="control-label" for="clientSecret">Github Client Secret</label>
+              <div class="controls">
+                <input id="clientSecret" data-bind="value: clientSecret" type="text" placeholder="Client Secret"></input>
+                <span class="help-inline" data-bind="visible: clientSecret() === undefined || clientSecret().length < 6">Invalid Client Secret </span>
+              </div>
+            </div>
+
+            <div class="btn-grp">
+              <button class="btn" data-bind="click: wizardPrevious">Previous</button>
+              <button type="submit" class="btn btn-primary">Next</button>
+            </div>
+        </fieldset>
+    </form>
+  </div>
+
+  <div data-bind="visible: wizardStep() === 3" class="span8 offset4" style="display: none;">
     <form data-bind="submit: adminUserSubmit" class="form-horizontal">
         <fieldset>
             <legend>Strider Installer</legend>
