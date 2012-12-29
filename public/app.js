@@ -27,6 +27,17 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
     self.clientSecret = ko.observable()
     self.inProgress = ko.observable(false)
     self.deploySteps = ko.observableArray([])
+    self.done = ko.observable(false)
+    self.console = ko.observable()
+    self.showConsole = ko.observable(false)
+
+    self.detailBtn = function() {
+      self.showConsole(!self.showConsole())
+    }
+
+    self.serverName = ko.computed(function() {
+      return 'https://' + this.herokuAppName() + '.herokuapp.com'
+    }, this)
 
     self.wizardPrevious = previous
 
@@ -43,6 +54,7 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
         return
       }
 
+      self.console("")
       self.socket = io.connect()
 
       self.socket.on('connect', function() {
@@ -76,6 +88,15 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
         if (data.info) {
           self.deploySteps.push(data)
         }
+        if (data.stderr) {
+          self.console += data.stderr
+        }
+        if (data.stdout) {
+          self.console += data.stdout
+        }
+      })
+      self.socket.on('deployComplete', function(data) {
+        self.done(true)
       })
     }
 

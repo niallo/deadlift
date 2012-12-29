@@ -71,7 +71,7 @@
               <label class="control-label" for="mainUrl">Main URL</label>
               <div class="controls">
                 <div class="input-append">
-                  <input id="mainUrl" class="input-xxlarge uneditable-input" data-bind="value: 'https://' +  herokuAppName() + '.herokuapp.com' " type="text"/>
+                  <input id="mainUrl" class="input-xxlarge uneditable-input" data-bind="value: serverName()" type="text"/>
                   <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
                     class="add-on"
                     width="20"
@@ -89,7 +89,7 @@
                            allowScriptAccess="always"
                            type="application/x-shockwave-flash"
                            pluginspage="http://www.macromedia.com/go/getflashplayer"
-                           data-bind="attr: { FlashVars: 'text=https://' +  herokuAppName() + '.herokuapp.com' }"
+                           data-bind="attr: { FlashVars: 'text=' +  serverName() }"
                     />
                   </object>
                 </div>
@@ -99,7 +99,7 @@
               <label class="control-label" for="callbackUrl">Callback URL</label>
               <div class="controls">
                 <div class="input-append">
-                  <input id="callbackUrl" class="input-xxlarge uneditable-input" data-bind="value: 'https://' +  herokuAppName() + '.herokuapp.com/auth/github/callback' " type="text" />
+                  <input id="callbackUrl" class="input-xxlarge uneditable-input" data-bind="value: serverName() + '/auth/github/callback' " type="text" />
                   <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
                     width="20"
                     height="20"
@@ -117,7 +117,7 @@
                            allowScriptAccess="always"
                            type="application/x-shockwave-flash"
                            pluginspage="http://www.macromedia.com/go/getflashplayer"
-                           data-bind="attr: { FlashVars: 'text=https://' +  herokuAppName() + '.herokuapp.com/auth/github/callback' }"
+                           data-bind="attr: { FlashVars: 'text=' +  serverName() + '/auth/github/callback' }"
                     />
                   </object>
                 </div>
@@ -130,14 +130,14 @@
             <div class="control-group" data-bind="css: { error: clientID() === undefined }">
               <label class="control-label" for="clientID">Github Client ID</label>
               <div class="controls">
-                <input id="clientID" data-bind="value: clientID" type="text" placeholder="Client ID"></input>
+                <input id="clientID" data-bind="value: clientID, valueUpdate:'afterkeydown'" type="text" placeholder="Client ID"></input>
                 <span class="help-inline" data-bind="visible: clientID() === undefined">Client ID Required</span>
               </div>
             </div>
             <div class="control-group" data-bind="css: { error: clientSecret() === undefined }">
               <label class="control-label" for="clientSecret">Github Client Secret</label>
               <div class="controls">
-                <input id="clientSecret" data-bind="value: clientSecret" type="text" placeholder="Client Secret"></input>
+                <input id="clientSecret" data-bind="value: clientSecret, valueUpdate:'afterkeydown'" type="text" placeholder="Client Secret"></input>
                 <span class="help-inline" data-bind="visible: clientSecret() === undefined">Client Secret Required</span>
               </div>
             </div>
@@ -179,15 +179,32 @@
   </div>
 
   <div data-bind="visible: wizardStep() === 4" class="span8 offset4" style="display: none;">
-    <h2 if: deploySteps().length >Strider deploy in progress...</h2>
-    <p>This can take a few minutes.</p>
-    <table class="table table-bordered">
+    <span data-bind="visible: !done()">
+      <h2>Strider install in progress</h2>
+      <p>This can take a few minutes.</p>
+    </span>
+    <span data-bind="visible: done()">
+      <h2>Strider install complete</h2>
+      <p>
+      Congratulations! Your new Strider instance is up and running. You can visit it at:
+      </p>
+      <p>
+      <a class="well well-small" data-bind="attr: {href: serverName}, text: serverName"></a>
+      </p>
+    </span>
+
+    <b>Install Progress</b>
+    <button data-bind="click: detailBtn">Show Details</button>
+    <pre class="console-output" data-bind="text: console, visible: showConsole" />
+    <table class="table">
       <tbody data-bind="foreach: deploySteps">
-        <tr data-bind="if: ($index() === $parent.deploySteps().length - 1)">
-            <td><img src="/spinner.gif"/> <span data-bind="text: info"/>...</td>
+        <tr data-bind="if: (!done() && $index() === $parent.deploySteps().length - 1)">
+            <td><img src="/spinner.gif"/></td>
+            <td><span data-bind="text: info"/><span>...</span></td>
         </tr>
-        <tr data-bind="ifnot: ($index() === $parent.deploySteps().length - 1)" class="success">
-            <td><i class="icon-ok"></i> <span data-bind="text: info" /></td>
+        <tr data-bind="ifnot: (!done() || $index() === $parent.deploySteps().length - 1)" class="success">
+            <td><i class="icon-ok success"></i></td>
+            <td><span data-bind="text: info" /></td>
         </tr>
         </tr>
       </tbody>
