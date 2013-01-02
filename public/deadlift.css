@@ -1,0 +1,7 @@
+pre.console-output {
+  width: 96%;
+  height: 350px;
+  overflow: hidden;
+  background-color: black;
+  color: white;
+}
