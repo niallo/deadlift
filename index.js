@@ -22,8 +22,8 @@ server.on('request', function(req, res) {
 var io = socketio.listen(server)
 
 if (everypaas.isHeroku()) {
-  io.set("transports", ["xhr-polling"]);
-  io.set("polling duration", 10);
+  io.set("transports", ["xhr-polling"])
+  io.set("polling duration", 10)
 }
 
 io.enable('browser client minification')
