@@ -1,4 +1,4 @@
 deadlift
 ========
 
-Browser-based wizard for installing (http://stridercd.com)[Strider Continuous Deployment & Integration] from Github to Heroku
+Browser-based wizard for installing [Strider Continuous Deployment & Integration](http://stridercd.com) from Github to Heroku
