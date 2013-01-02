@@ -77,6 +77,10 @@ io.on('connection', function(socket) {
             socket.emit('deployError', {error:err})
             return
           }
+          herokuPrivKey = null
+          herokuApiKey = null
+          socket.set('herokuApiKey', null)
+          socket.set('herokuPrivKey', null)
           socket.emit('deployComplete')
           console.log("deploy complete!")
         })
