@@ -1,9 +1,10 @@
-var _        = require('underscore')
-var deploy   = require('./lib/deploy')
-var heroku   = require('./lib/heroku')
-var http     = require('http')
-var socketio = require('socket.io')
-var static   = require('node-static')
+var _         = require('underscore')
+var deploy    = require('./lib/deploy')
+var everypaas = require('everypaas')
+var heroku    = require('./lib/heroku')
+var http      = require('http')
+var socketio  = require('socket.io')
+var static    = require('node-static')
 
 var STRIDER_REPO = "https://github.com/Strider-CD/strider"
 
@@ -19,6 +20,11 @@ server.on('request', function(req, res) {
 
 // Plug in socket.io
 var io = socketio.listen(server)
+
+if (everypaas.isHeroku()) {
+  io.set("transports", ["xhr-polling"]);
+  io.set("polling duration", 10);
+}
 
 io.enable('browser client minification')
 io.enable('browser client etag')
