@@ -28,11 +28,16 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
     self.inProgress = ko.observable(false)
     self.deploySteps = ko.observableArray([])
     self.done = ko.observable(false)
-    self.console = ko.observable()
+    self.console = ko.observable("")
     self.showConsole = ko.observable(false)
 
-    self.detailBtn = function() {
+    self.detailBtn = function(data, ev) {
       self.showConsole(!self.showConsole())
+      if (self.showConsole()) {
+        ev.target.innerText = 'Hide Details'
+      } else {
+        ev.target.innerText = 'Show Details'
+      }
     }
 
     self.serverName = ko.computed(function() {
@@ -85,14 +90,20 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
       })
 
       self.socket.on('deployUpdate', function(data) {
+        function msg(s) {
+          self.console(self.console() + s)
+        }
         if (data.info) {
           self.deploySteps.push(data)
+          msg('[INSTALLER] ' + data.info)
         }
+        var el = document.getElementById('console-output')
+        el.scrollTop = el.scrollHeight
         if (data.stderr) {
-          self.console += data.stderr
+          msg(data.stderr)
         }
         if (data.stdout) {
-          self.console += data.stdout
+          msg(data.stdout)
         }
       })
       self.socket.on('deployComplete', function(data) {

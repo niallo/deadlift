@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
   <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link href="/deadlift.css" rel="stylesheet" media="screen">
   <script type="text/javascript" data-main="init.js" src="require.js"></script>
 </head>
 
@@ -193,22 +194,28 @@
       </p>
     </span>
 
-    <b>Install Progress</b>
-    <button data-bind="click: detailBtn">Show Details</button>
-    <pre class="console-output" data-bind="text: console, visible: showConsole" />
-    <table class="table">
-      <tbody data-bind="foreach: deploySteps">
-        <tr data-bind="if: (!done() && $index() === $parent.deploySteps().length - 1)">
-            <td><img src="/spinner.gif"/></td>
-            <td><span data-bind="text: info"/><span>...</span></td>
-        </tr>
-        <tr data-bind="ifnot: (!done() || $index() === $parent.deploySteps().length - 1)" class="success">
-            <td><i class="icon-ok success"></i></td>
-            <td><span data-bind="text: info" /></td>
-        </tr>
-        </tr>
-      </tbody>
-    </table>
+    <span data-bind="visible: !done()">
+      <b>Install Progress</b>
+      <table class="table">
+        <tbody data-bind="foreach: deploySteps">
+          <tr data-bind="if: ($index() === $parent.deploySteps().length - 1)">
+              <td>
+                <img src="/spinner.gif"/>
+                <button data-bind="click: $parent.detailBtn, visible: $index() === 6">Show Details</button>
+              </td>
+              <td><span data-bind="text: info"/><span>...</span></td>
+          </tr>
+          <tr data-bind="ifnot: ($index() === $parent.deploySteps().length - 1)" class="success">
+              <td>
+                <i class="icon-ok success"></i>
+                <button data-bind="click: $parent.detailBtn, visible: $index() === 6">Show Details</button>
+              </td>
+              <td><span data-bind="text: info" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <pre id="console-output" class="console-output" data-bind="text: console, visible: showConsole" />
+    </span>
   </div>
 
 </div>
