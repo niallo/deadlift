@@ -17,6 +17,8 @@
         <fieldset>
             <legend>Strider Installer</legend>
             <label><b>Heroku API Key</b></label>
+            <p>This is a web-based installer to set up a completely private and free instance of <a href="http://stridercd.com">Strider Continuous Integration and Deployment</a> on your <a href="http://heroku.com">Heroku</a> account.
+            </p>
             <div class="control-group" data-bind="css: { error: herokuApiKeyInvalid() && !inProgress() }">
               <div class="input-append">
                 <input data-bind="value: herokuApiKey" class="input-xlarge" type="password" placeholder="API key"></input>
@@ -24,7 +26,7 @@
                 <img class="add-on" src="/spinner.gif" style="display: none;" data-bind="visible: inProgress" />
               </div>
             </div>
-            <span class="help-block">Find this on your <a target="_blank" href="https://dashboard.heroku.com/account">Heroku account page</a>. For your security, we don't persist this anywhere.</span>
+            <span class="help-block">Find this on your <a target="_blank" href="https://dashboard.heroku.com/account">Heroku account page</a>. For your security, we don't persist this anywhere. <a href="https://github.com/niallo/deadlift">Source code</a></span>
             <div class="btn-grp">
               <button disabled="1" class="btn">Previous</button>
               <button type="submit" class="btn btn-primary" data-bind="disable: inProgress">Next</button>
