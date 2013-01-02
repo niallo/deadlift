@@ -16,9 +16,10 @@
     <form data-bind="submit: herokuApiKeySubmit">
         <fieldset>
             <legend>Strider Installer</legend>
-            <label><b>Heroku API Key</b></label>
-            <p>This is a web-based installer to set up a completely private and free instance of <a href="http://stridercd.com">Strider Continuous Integration and Deployment</a> on your <a href="http://heroku.com">Heroku</a> account.
+            <p>This is a web-based installer to set up your own free, personal instance of <a href="http://stridercd.com">Strider Continuous Integration and Deployment</a> on your <a href="http://heroku.com">Heroku</a> account. It uses the Heroku API to do so.
             </p>
+            <p><a href="https://github.com/niallo/deadlift">Source code for this app</a></p>
+            <label><b>Heroku API Key</b></label>
             <div class="control-group" data-bind="css: { error: herokuApiKeyInvalid() && !inProgress() }">
               <div class="input-append">
                 <input data-bind="value: herokuApiKey" class="input-xlarge" type="password" placeholder="API key"></input>
@@ -26,7 +27,8 @@
                 <img class="add-on" src="/spinner.gif" style="display: none;" data-bind="visible: inProgress" />
               </div>
             </div>
-            <span class="help-block">Find this on your <a target="_blank" href="https://dashboard.heroku.com/account">Heroku account page</a>. For your security, we don't persist this anywhere. <a href="https://github.com/niallo/deadlift">Source code</a></span>
+            <span class="help-block">Find API key on your <a target="_blank" href="https://dashboard.heroku.com/account">Heroku account page</a>. For your security, we don't persist it anywhere. 
+            </span>
             <div class="btn-grp">
               <button disabled="1" class="btn">Previous</button>
               <button type="submit" class="btn btn-primary" data-bind="disable: inProgress">Next</button>
@@ -175,7 +177,7 @@
 
             <div class="btn-grp">
               <button class="btn" data-bind="click: wizardPrevious">Previous</button>
-              <button type="submit" class="btn btn-primary">Next</button>
+              <button type="submit" class="btn btn-primary" data-bind="disable: adminUserPassword() == undefined || adminUserEmail() === undefined">Next</button>
             </div>
         </fieldset>
     </form>
