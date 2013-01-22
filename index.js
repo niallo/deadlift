@@ -96,7 +96,7 @@ io.on('connection', function(socket) {
         socket.emit('invalidHerokuApp', JSON.stringify({status: "error", errors:[e]}))
         return
       }
-      socket.emit('herokuAppCreated', {appName:data.herokuAppName})
+      socket.emit('herokuAppCreated', {herokuAppName:data.herokuAppName})
     }
     socket.get('herokuApiKey', function(e, herokuApiKey) {
       if (e) {

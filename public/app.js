@@ -77,6 +77,7 @@ define(['knockout-2.2.0', '/socket.io/socket.io.js'], function(ko, io) {
       })
 
       self.socket.on('herokuAppCreated', function(data) {
+        self.herokuApps.push(data.herokuAppName)
         self.herokuAppName(data.herokuAppName)
         self.inProgress(false)
         next()
